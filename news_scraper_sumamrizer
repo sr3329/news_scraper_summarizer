@@ -1,0 +1,113 @@
+#!/usr/bin/python
+from __future__ import absolute_import
+from __future__ import division, print_function, unicode_literals
+
+from newsapi import NewsApiClient
+import json
+import datetime
+import datetime
+
+from sumy.parsers.html import HtmlParser
+from sumy.parsers.plaintext import PlaintextParser
+from sumy.nlp.tokenizers import Tokenizer
+from sumy.summarizers.lsa import LsaSummarizer as Summarizer
+from sumy.nlp.stemmers import Stemmer
+from sumy.utils import get_stop_words
+
+if __name__ == "__main__":
+    today = datetime.datetime.now()
+    DD = datetime.timedelta(days=7)
+    weekback = today - DD
+
+    y1 = str(today.strftime("%Y"))
+    m1 = str(today.strftime("%m"))
+    d1 = str(today.strftime("%d"))
+
+    y2 = str(weekback.strftime("%Y"))
+    m2 = str(weekback.strftime("%m"))
+    d2 = str(weekback.strftime("%d"))
+
+    date_string1 = y1+'-'+m1+'-'+d1
+    date_string2 = y2+'-'+m2+'-'+d2
+
+    print('Enter topic:')
+    x = input()
+    newsapi = NewsApiClient(api_key='4f0bg7f9834567d39dda90e6dd74s43l') #This is a dummy key. Get yours from newsapi.org
+
+    
+    # /v2/everything
+    all_articles = newsapi.get_everything(q=x,
+                                          #sources='bbc-news,the-verge',
+                                          #domains='bbc.co.uk,bloomberg.com',
+                                          from_param=date_string1,
+                                          to=date_string2,
+                                          language='en',
+                                          sort_by='relevancy',
+                                          page=1)
+
+    # /v2/sources
+    #sources = newsapi.get_sources()
+
+    #saving all_articles JSON data as a local json file
+    with open('all_articles.json', 'w') as json_file:
+          json.dump(all_articles, json_file)
+
+    #Reading all_articles JSON file to retrieve necessary data
+    f = open("all_articles.json")
+    data = json.load(f) #dict containing keys: 'status', 'totalResults', 'articles'
+    f.close()
+    article_data = data['articles']
+
+    if (len(article_data)==0):
+      print ("No news")
+      exit()
+
+    print ("*********************\nTop headlines in the past week are:")
+    title_list =[]
+    for elements in article_data: #Every element is a dict and we want to retrieve the 'url' key-value
+      title_list.append(elements['title'])
+
+    url_list =[]
+    i = 0
+    for elements in article_data: #Every element is a dict and we want to retrieve the 'url' key-value
+      print(i+1,"\b.",title_list[i],"\n", elements['url'],"\n")
+      url_list.append(elements['url'])
+      i+=1
+    print ("*********************")
+
+    print('Do you need a summary? Y/N')
+    choice = input()
+    if choice=='Y':
+      print ("Enter article number:")
+      article_number = input()
+      article_number = int(article_number)
+
+    elif choice=='y':
+      print ("Enter article number:")
+      article_number = input()
+      article_number = int(article_number)
+
+    elif choice=='N':
+      exit()
+    elif choice=='n':
+      exit()
+
+    LANGUAGE = "english"
+    SENTENCES_COUNT = 20
+
+    summary_text = ""
+
+
+    url = str(url_list[article_number-1])
+    parser = HtmlParser.from_url(url, Tokenizer(LANGUAGE))
+    # or for plain text files
+    #parser = PlaintextParser.from_file("demofile3.txt", Tokenizer(LANGUAGE))
+    stemmer = Stemmer(LANGUAGE)
+
+    summarizer = Summarizer(stemmer)
+    summarizer.stop_words = get_stop_words(LANGUAGE)
+
+    for sentence in summarizer(parser.document, SENTENCES_COUNT):
+        summary_text += str(sentence)
+
+    print (summary_text)
