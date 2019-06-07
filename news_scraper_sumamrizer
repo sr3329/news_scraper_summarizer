@@ -32,7 +32,7 @@ if __name__ == "__main__":
 
     print('Enter topic:')
     x = input()
-    newsapi = NewsApiClient(api_key='4f0bg7f9834567d39dda90e6dd74s43l') #This is a dummy key. Get yours from newsapi.org
+    newsapi = NewsApiClient(api_key='4f0bg7f9834567d39dda90e6dd74s43l') #This is a dummy key. Get your's from newsapi.org
 
     
     # /v2/everything
@@ -64,7 +64,7 @@ if __name__ == "__main__":
 
     print ("*********************\nTop headlines in the past week are:")
     title_list =[]
-    for elements in article_data: #Every element is a dict and we want to retrieve the 'url' key-value
+    for elements in article_data: #Every element is a dict and we want to retrieve the 'title' key-value
       title_list.append(elements['title'])
 
     url_list =[]
